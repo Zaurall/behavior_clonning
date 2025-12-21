@@ -14,5 +14,5 @@ echo "Node: ${SLURMD_NODENAME}"
 export PYTHONUNBUFFERED=1
 
 echo "$(date +"%T")"
-script -q -c "uv run -m offline.run --num-workers 1 --worker-id 0 --max-segment 0 --device cuda --verbose" /dev/null
+uv run -m offline.run --num-workers 1 --worker-id 0 --max-segment 0 --device cuda --verbose
 echo "$(date +"%T")"
