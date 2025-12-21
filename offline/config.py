@@ -13,8 +13,8 @@ class PGTOConfig:
     horizon: int = 6  # Lookahead horizon
     noise_window: int = 2  # Steps within horizon to inject noise
     noise_std: float = 0.15  # Noise standard deviation
-    temperature: float = 0.01  # Temperature to combine candidate trajectories
-    w_action_smooth = 0.0  # Action smoothing
+    temperature: float = 0.5  # Temperature to combine candidate trajectories
+    w_action_smooth = 500.0  # Action smoothing
 
     # Evaluation (match eval.py/tinyphysics.py)
     w_tracking: float = 5000.0
