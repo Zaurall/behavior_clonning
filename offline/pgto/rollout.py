@@ -144,4 +144,12 @@ class ParallelRollout:
             + self.config.w_action_smooth * action_smoothness
         )
 
+        # DEBUG
+        print(
+            f"  Rollout: costs min={costs.min():.1f} max={costs.max():.1f} mean={costs.mean():.1f}"
+        )
+        print(
+            f"  Rollout: first_actions min={first_actions.min():.3f} max={first_actions.max():.3f}"
+        )
+
         return costs, first_actions
