@@ -19,16 +19,14 @@ class BatchedPhysics(nn.Module):
 
         self.config = config
 
+        self.device = self.config.device
+
         self.model = (
-            onnx2torch.convert(self.config.onnx_model_path)
-            .to(self.config.device)
-            .eval()
+            onnx2torch.convert(self.config.onnx_model_path).to(self.device).eval()
         )
 
         # Bins for tokenization
-        self.register_buffer(
-            "bins", torch.linspace(-5, 5, 1024, device=self.config.device)
-        )
+        self.register_buffer("bins", torch.linspace(-5, 5, 1024, device=self.device))
 
     @torch.no_grad()
     def forward(
@@ -46,7 +44,7 @@ class BatchedPhysics(nn.Module):
         Returns:
             logits: [B, 1024] - logits over lataccel bins
         """
-        return self.model(states, tokens)
+        return self.model(states, tokens)[:, -1, :]
 
     @torch.no_grad()
     def sample(
@@ -113,3 +111,9 @@ class BatchedPhysics(nn.Module):
         )
 
         return lataccel
+
+    def tokenize(self, lataccel: torch.Tensor) -> torch.Tensor:
+        """Convert lataccel values to token indices."""
+        lataccel = torch.clamp(lataccel, -5, 5)
+        tokens = torch.searchsorted(self.bins, lataccel, right=False)
+        return torch.clamp(tokens, 0, 1023)

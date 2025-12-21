@@ -34,7 +34,7 @@ class Segment:
     initial_history_lataccel: torch.Tensor  # [20]
     initial_lataccel: float
 
-    num_steps: float  # T
+    num_steps: int  # T
 
     def get_future_context(self, t: int, horizon: int) -> FutureContext:
         """
