@@ -56,7 +56,7 @@ def main():
     study = optuna.create_study(
         sampler=sampler,
         storage="sqlite:///optuna_pgto_study.db",
-        study_name="pgto_hyperparameter_search",
+        study_name="pgto_hyperparameter_search_fixed",
         direction="minimize",
         load_if_exists=True,
     )
