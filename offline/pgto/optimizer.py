@@ -251,12 +251,10 @@ class PGTOOptimizer:
             all_cmaes_state[:, t, 2] = cmaes_state.u_t1
             all_cmaes_state[:, t, 3] = cmaes_state.u_t2
 
-            # Update error integral BEFORE PGTO step (skip t=0)
-            if t > 0:
-                error_t = target_t - prev_lataccel
-                cmaes_state.error_integral = torch.clamp(
-                    cmaes_state.error_integral + error_t, -5.0, 5.0
-                )
+            error_t = target_t - prev_lataccel
+            cmaes_state.error_integral = torch.clamp(
+                cmaes_state.error_integral + error_t, -5.0, 5.0
+            )
 
             # Step PGTO, find best action for each restart
             # Deterministic physics inside
