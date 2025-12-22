@@ -256,6 +256,11 @@ class PGTOOptimizer:
                 cmaes_state.error_integral + error_t, -5.0, 5.0
             )
 
+            # DEBUG
+            print(
+                f"  After update: error_integral = {cmaes_state.error_integral[0].item():.4f}"
+            )
+
             # Step PGTO, find best action for each restart
             # Deterministic physics inside
             # Lots of comments on physics because it's hard to keep track of 😂
@@ -271,6 +276,9 @@ class PGTOOptimizer:
             # DEBUG
             print(f"PGTO chose: {best_actions[0].item():.4f}")
             print(f"Diff from CMA-ES: {abs(best_actions[0].item() - cmaes_action):.4f}")
+            print(
+                f"  After PGTO: error_integral = {cmaes_state.error_integral[0].item():.4f}"
+            )
 
             all_actions[:, t] = best_actions
 
