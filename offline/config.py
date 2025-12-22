@@ -10,7 +10,7 @@ class PGTOConfig:
 
     # Per-step optimization
     K: int = 2048  # Number of candidate trajectories per restart
-    horizon: int = 10  # Lookahead horizon
+    horizon: int = 8  # Lookahead horizon
     noise_window: int = 2  # Steps within horizon to inject noise
     noise_std: float = 0.05  # Noise standard deviation
     w_action_smooth: float = 6.0  # Action smoothing
