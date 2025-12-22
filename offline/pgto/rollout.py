@@ -81,6 +81,7 @@ class ParallelRollout:
                 )
 
             # Get CMA-ES action
+            # Pass targets[h+1:] to match training code where 'future' starts at t+1
             features = self.cmaes.compute_features(
                 target=target_h.expand(RK),
                 current_lataccel=prev_lat,
@@ -88,7 +89,7 @@ class ParallelRollout:
                 v_ego=v_ego_h.expand(RK),
                 a_ego=a_ego_h.expand(RK),
                 roll=roll_h.expand(RK),
-                future_targets=future_context.targets[h:],
+                future_targets=future_context.targets[h + 1 :],
             )
             cmaes_actions = self.cmaes(features)
 
