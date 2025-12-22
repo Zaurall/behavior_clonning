@@ -12,11 +12,11 @@ def objective(trial: optuna.Trial) -> float:
 
     # Sample hyperparameters
     params = {
-        "horizon": trial.suggest_int("horizon", 4, 12),
+        "horizon": trial.suggest_int("horizon", 6, 12),
         "noise_window": trial.suggest_int("noise_window", 1, 3),
-        "noise_std": trial.suggest_float("noise_std", 0.01, 1.0, log=True),
-        "temperature": trial.suggest_float("temperature", 0.01, 5.0, log=True),
-        "w_action_smooth": trial.suggest_float("w_action_smooth", 1.0, 1e7, log=True),
+        "noise_std": trial.suggest_float("noise_std", 0.01, 0.3, log=True),
+        "temperature": trial.suggest_float("temperature", 0.001, 0.2, log=True),
+        "w_action_smooth": trial.suggest_float("w_action_smooth", 4.0, 8.0),
     }
 
     print(f"Testing: {params}")

@@ -143,7 +143,7 @@ class ParallelRollout:
         costs = (
             self.config.w_tracking * total_tracking
             + self.config.w_jerk * total_jerk
-            + self.config.w_action_smooth * total_action_smooth
+            + (10**self.config.w_action_smooth) * total_action_smooth
         )
 
         return costs, first_actions
