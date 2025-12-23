@@ -10,7 +10,6 @@ from offline.segment import load_segment
 
 def objective(trial: optuna.Trial) -> float:
     """Test PGTO parameters on representative files and return mean cost."""
-    # The Golden 10 (Stratified Difficulty) - ORDERED HARDEST TO EASIEST for Early Pruning
     SEGMENTS = [
         "00432",
         "03061",
