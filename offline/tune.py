@@ -24,8 +24,9 @@ def objective(trial: optuna.Trial) -> float:
     ]
 
     params = {
-        "noise_std": trial.suggest_float("noise_std", 0.01, 0.20, log=True),
-        "w_variance": trial.suggest_float("w_variance", 0.33, 4.0),
+        "noise_std": trial.suggest_float("noise_std", 0.01, 0.30, log=True),
+        "w_action_smooth": trial.suggest_float("w_variance", 1.0, 10.0),
+        "w_variance": trial.suggest_float("w_variance", 0.1, 10.0, log=True),
     }
     print(f"Testing: {params}")
 
@@ -36,6 +37,7 @@ def objective(trial: optuna.Trial) -> float:
             horizon=12,
             noise_window=2,
             noise_std=params["noise_std"],
+            w_action_smooth=params["w_action_smooth"],
             w_variance=params["w_variance"],
         )
         optimizer = PGTOOptimizer(config)

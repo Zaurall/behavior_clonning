@@ -57,10 +57,12 @@ class ParallelRollout:
         tokens = history_tokens.clone()
         cmaes_batch = cmaes_state.clone()
         prev_lat = prev_lataccel.clone()
+        prev_action_h = prev_action.clone()
 
         total_tracking = torch.zeros(RK, device=self.config.device)
         total_jerk = torch.zeros(RK, device=self.config.device)
         total_variance = torch.zeros(RK, device=self.config.device)
+        total_action_smooth = torch.zeros(RK, device=self.config.device)
         first_actions = None
 
         for h in range(H):
@@ -102,6 +104,8 @@ class ParallelRollout:
             if first_actions is None:
                 first_actions = actions.clone()
 
+            total_action_smooth += (actions - prev_action_h) ** 2
+
             # Update state history
             new_state = torch.stack(
                 [
@@ -137,6 +141,7 @@ class ParallelRollout:
             tokens = torch.cat([tokens[:, 1:], new_tokens.unsqueeze(1)], dim=1)
 
             prev_lat = pred_lat
+            prev_action_h = actions
 
         assert first_actions is not None
 
@@ -144,6 +149,7 @@ class ParallelRollout:
         costs = (
             self.config.w_tracking * total_tracking
             + self.config.w_jerk * total_jerk
+            + (10**self.config.w_action_smooth) * total_action_smooth
             + self.config.w_variance * total_variance
         )
 
