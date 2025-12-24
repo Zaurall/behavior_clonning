@@ -6,7 +6,7 @@ class PGTOConfig:
     """Configuration for PGTO optimization."""
 
     # Parallel restarts
-    num_restarts: int = 5
+    num_restarts: int = 3
 
     # Per-step optimization
     K: int = 2048  # Number of candidate trajectories per restart
@@ -14,7 +14,7 @@ class PGTOConfig:
     noise_window: int = 2  # Steps within horizon to inject noise
     noise_std: float = 0.05  # Noise standard deviation
     w_action_smooth: float = 4.6  # Jerky action penalty
-    w_variance: float = 1.0  # Linear multiplier to variance penalty
+    w_variance: float = 1.0  # Linear multiplier to variance penalty (theoretically should just be 1 for risk-neutral)
 
     # Evaluation (match eval.py/tinyphysics.py)
     w_tracking: float = 5000.0
