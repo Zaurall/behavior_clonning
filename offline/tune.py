@@ -39,41 +39,37 @@ def objective(trial: optuna.Trial) -> tuple[float, float]:
     }
     print(f"Testing: {params}")
 
-    try:
-        config = PGTOConfig(
-            num_restarts=3,
-            K=params["K"],
-            n_iterations_max=params["n_iterations_max"],
-            elite_frac=params["elite_frac"],
-            horizon_init=params["horizon_init"],
-            horizon_scale=params["horizon_scale"],
-            noise_window=params["noise_window"],
-            noise_std_init=params["noise_std_init"],
-            w_action_smooth=params["w_action_smooth"],
-            shift_threshold=params["shift_threshold"],
-        )
-        optimizer = PGTOOptimizer(config)
+    config = PGTOConfig(
+        num_restarts=3,
+        K=params["K"],
+        n_iterations_max=params["n_iterations_max"],
+        elite_frac=params["elite_frac"],
+        horizon_init=params["horizon_init"],
+        horizon_scale=params["horizon_scale"],
+        noise_window=params["noise_window"],
+        noise_std_init=params["noise_std_init"],
+        w_action_smooth=params["w_action_smooth"],
+        shift_threshold=params["shift_threshold"],
+    )
+    optimizer = PGTOOptimizer(config)
 
-        total_cost = 0.0
-        total_time = 0.0
+    total_cost = 0.0
+    total_time = 0.0
 
-        for i, seg_id in enumerate(SEGMENTS):
-            segment = load_segment(Path(f"data/{seg_id}.csv"), config)
+    for seg_id in SEGMENTS:
+        segment = load_segment(Path(f"data/{seg_id}.csv"), config)
 
-            start = time.time()
-            result = optimizer.optimize(segment, verbose=False)
-            elapsed = time.time() - start
+        start = time.time()
+        result = optimizer.optimize(segment, verbose=False)
+        elapsed = time.time() - start
 
-            total_cost += float(np.mean([r.cost for r in result.restarts]))
-            total_time += elapsed
+        total_cost += float(np.mean([r.cost for r in result.restarts]))
+        total_time += elapsed
 
-        avg_cost = total_cost / len(SEGMENTS)
-        avg_time = total_time / len(SEGMENTS)
+    avg_cost = total_cost / len(SEGMENTS)
+    avg_time = total_time / len(SEGMENTS)
 
-        return avg_cost, avg_time
-    except Exception as e:
-        print(f"Trial failed: {e}")
-        return float("inf"), float("inf")  # Return bad values instead of pruning
+    return avg_cost, avg_time
 
 
 def main():
