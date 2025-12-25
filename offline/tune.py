@@ -82,7 +82,7 @@ def main():
     study = optuna.create_study(
         sampler=sampler,
         storage="sqlite:///optuna_pgto_study.db",
-        study_name="pgto_hyperparameter_search_multi_log",
+        study_name="pgto_hyperparameter_search_multi_log_2",
         directions=["minimize", "minimize"],
         load_if_exists=True,
     )
