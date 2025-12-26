@@ -76,7 +76,6 @@ def main():
     sampler = optuna.samplers.TPESampler(
         n_startup_trials=210,
         multivariate=True,
-        constant_liar=True,
     )
 
     study = optuna.create_study(
