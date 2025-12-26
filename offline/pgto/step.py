@@ -36,7 +36,7 @@ class PGTOStep:
         prev_action: torch.Tensor,  # [R]
         cmaes_state: CMAESState,  # Batch size R
         future_context: FutureContext,  # {targets, roll, v_ego, a_ego} each [H]
-    ) -> torch.Tensor:
+    ) -> tuple[torch.Tensor, int]:
         """
         Find optimal action for each of R restarts.
 
@@ -71,6 +71,7 @@ class PGTOStep:
 
         prev_mean = mean.clone()
 
+        iteration = None  # for type checker
         for iteration in range(self.config.n_iterations_max):
             horizon = int(
                 self.config.horizon_init * (self.config.horizon_scale**iteration)
@@ -143,5 +144,6 @@ class PGTOStep:
                     break
 
         assert best_actions is not None
+        assert iteration is not None
 
-        return best_actions
+        return best_actions, iteration + 1

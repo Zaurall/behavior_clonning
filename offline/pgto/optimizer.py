@@ -29,6 +29,8 @@ class TrajectoryData:
     # Actions taken
     actions: torch.Tensor  # [T]
 
+    iterations_per_step: torch.Tensor
+
     def to_dict(self) -> dict[str, torch.Tensor]:
         return {
             "history_states": self.history_states.cpu(),
@@ -37,6 +39,7 @@ class TrajectoryData:
             "targets": self.targets.cpu(),
             "cmaes_state": self.cmaes_state.cpu(),
             "actions": self.actions.cpu(),
+            "iterations_per_step": self.iterations_per_step.cpu(),
         }
 
     @classmethod
@@ -48,6 +51,7 @@ class TrajectoryData:
             targets=d["targets"].to(device),
             cmaes_state=d["cmaes_state"].to(device),
             actions=d["actions"].to(device),
+            iterations_per_step=d["iterations_per_step"].to(device),
         )
 
 
@@ -203,6 +207,7 @@ class PGTOOptimizer:
         all_targets = torch.zeros(R, T, device=device)
         all_cmaes_state = torch.zeros(R, T, 4, device=device)
         all_actions = torch.zeros(R, T, device=device)
+        all_iterations_used = []
 
         prev_action = history_states[:, -1, 0].clone()
 
@@ -243,7 +248,7 @@ class PGTOOptimizer:
             # Step PGTO, find best action for each restart
             # Deterministic physics inside
             # Lots of comments on physics because it's hard to keep track of 😂
-            best_actions = self.pgto_step.optimize(
+            best_actions, iterations_used = self.pgto_step.optimize(
                 history_states=history_states,
                 history_tokens=history_tokens,
                 prev_lataccel=prev_lataccel,
@@ -251,6 +256,8 @@ class PGTOOptimizer:
                 cmaes_state=cmaes_state,
                 future_context=future_context,
             )
+
+            all_iterations_used.append(iterations_used)
 
             all_actions[:, t] = best_actions
 
@@ -298,6 +305,8 @@ class PGTOOptimizer:
             total_tracking / self.config.cost_steps
         ) + self.config.w_jerk * (total_jerk / self.config.cost_steps)
 
+        all_iterations_used_tensor = torch.tensor(all_iterations_used, device=device)
+
         # Build into TrajectoryData
         trajectories = []
         for r in range(R):
@@ -309,6 +318,7 @@ class PGTOOptimizer:
                     targets=all_targets[r],
                     cmaes_state=all_cmaes_state[r],
                     actions=all_actions[r],
+                    iterations_per_step=all_iterations_used_tensor,
                 )
             )
 
