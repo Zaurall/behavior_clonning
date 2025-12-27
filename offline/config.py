@@ -9,15 +9,14 @@ class PGTOConfig:
     num_restarts: int = 3
 
     # Per-step optimization
-    K: int = 512  # Number of candidate trajectories per iteration
-    noise_window: int = 2  # Steps within horizon to inject noise
-    n_iterations_max: int = 3
-    elite_frac: float = 0.1
-    horizon_init: int = 8
-    horizon_scale: float = 1.3
-    noise_std_init: float = 0.05
-    shift_threshold: float = 0.01
-    w_action_smooth: float = 4.6  # Jerky action penalty
+    K: int = 128  # Number of candidate trajectories per iteration
+    noise_window: int = 5  # Steps within horizon to inject noise
+    n_iterations_max: int = 19
+    elite_frac: float = 0.19
+    horizon: int = 6
+    noise_std_init: float = 0.19
+    shift_threshold: float = 0.005
+    w_action_smooth: float = 4.5  # Jerky action penalty
     w_variance: float = 1.0  # Linear multiplier to variance penalty (theoretically should just be 1 for risk-neutral)
 
     # Evaluation (match eval.py/tinyphysics.py)

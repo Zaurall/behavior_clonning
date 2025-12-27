@@ -73,10 +73,6 @@ class PGTOStep:
 
         iteration = None  # for type checker
         for iteration in range(self.config.n_iterations_max):
-            horizon = int(
-                self.config.horizon_init * (self.config.horizon_scale**iteration)
-            )
-
             # Expand states from R to R*K (each restart has K candidates)
             states_expanded = history_states.repeat_interleave(K, dim=0)  # [R*K, 20, 4]
             tokens_expanded = history_tokens.repeat_interleave(K, dim=0)  # [R*K, 20]
@@ -104,7 +100,6 @@ class PGTOStep:
                 cmaes_state=cmaes_expanded,
                 future_context=future_context,
                 noise=noise_flat,
-                horizon=horizon,
             )
 
             # Reshape to [R, K]
