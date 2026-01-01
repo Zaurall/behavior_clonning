@@ -65,14 +65,12 @@ def main() -> None:
     # Get segments this worker should process
     all_segments = get_segment_paths(Path(config.segments_dir))
     segments = [
-        p
-        for p in all_segments
-        if args.min_segment <= int(p.stem) <= args.max_segment
+        p for p in all_segments if args.min_segment <= int(p.stem) <= args.max_segment
     ]
-    my_segments = segments[args.worker_id :: args.num_workers]
-
-    # Count already done
-    remaining = [p for p in my_segments if not (output_dir / f"{p.stem}.pt").exists()]
+    remaining = [
+        p for p in segments if not (output_dir / f"{p.stem}.pt").exists()
+    ]  # Filter first
+    my_segments = remaining[args.worker_id :: args.num_workers]
 
     print(f"Worker {args.worker_id}/{args.num_workers}")
     print(f"  Segments assigned: {len(my_segments)}")

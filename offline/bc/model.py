@@ -77,10 +77,8 @@ class BCModelCNN(nn.Module):
         self.head = nn.Sequential(
             nn.Linear(2247, 512),
             nn.GELU(),
-            nn.Dropout(0.1),
             nn.Linear(512, 128),
             nn.GELU(),
-            nn.Dropout(0.1),
             nn.Linear(128, 1),
         )
 
