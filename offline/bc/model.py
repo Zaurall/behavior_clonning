@@ -109,7 +109,7 @@ class BCModelAsymmetric(nn.Module):
 
     def __init__(self, config: BCConfig) -> None:
         super().__init__()
-        self.noise_std = 0.02  # Light noise on past only
+        self.noise_std = 0.00  # Light noise on past only
 
         # Past pathway: 40 inputs (20 actions + 20 lataccels)
         self.past_encoder = nn.Sequential(
