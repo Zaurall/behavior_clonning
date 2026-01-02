@@ -28,12 +28,12 @@ class Controller(BaseController):
 
     def _load_model(self) -> None:
         """Load model weights lazily."""
-        from offline.bc.model import BCModelCNN
+        from offline.bc.model import BCModel
         from offline.config import BCConfig
 
         self.device = torch.device("cpu")
         config = BCConfig()
-        self.model = BCModelCNN(config).to(self.device)
+        self.model = BCModel(config).to(self.device)
         self.model.load_state_dict(
             torch.load(self.model_path, map_location=self.device, weights_only=True)
         )
