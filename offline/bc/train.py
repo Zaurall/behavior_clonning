@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 
 from offline.bc.dataset import BCDataset, get_segment_ids
 from offline.bc.evaluate import evaluate_online
-from offline.bc.model import BCModelAsymmetric
+from offline.bc.model import BCModel
 from offline.config import BCConfig
 
 logging.basicConfig(
@@ -45,7 +45,7 @@ def train(config: BCConfig) -> None:
     )
 
     # Initialize model
-    model = BCModelAsymmetric(config).to(device)
+    model = BCModel(config).to(device)
     logger.info(f"Model parameters: {model.count_parameters():,}")
 
     # Optimizer and scheduler
