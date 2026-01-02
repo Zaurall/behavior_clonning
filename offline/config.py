@@ -57,10 +57,10 @@ class BCConfig:
     batch_size: int = 8192
     lr: float = 3e-4
     weight_decay: float = 1e-5
-    epochs: int = 50
+    epochs: int = 100
 
     # Evaluation
-    eval_every_n_epochs: int = 10
+    eval_every_n_epochs: int = 100
     eval_num_segments: int = 500
 
     # Paths
