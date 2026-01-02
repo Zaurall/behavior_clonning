@@ -54,10 +54,10 @@ class BCConfig:
     hidden_sizes: tuple[int, ...] = (1024, 1024, 512, 256, 128)
 
     # Training
-    batch_size: int = 4096
+    batch_size: int = 8192
     lr: float = 3e-4
     weight_decay: float = 1e-5
-    epochs: int = 1000
+    epochs: int = 250
 
     # Evaluation
     eval_every_n_epochs: int = 50
