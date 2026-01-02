@@ -51,7 +51,7 @@ class BCConfig:
 
     # Model
     input_size: int = 247
-    hidden_sizes: tuple[int, ...] = (1024, 1024, 512, 256, 128)
+    hidden_sizes: tuple[int, ...] = (1024, 1024, 1024, 512)
 
     # Training
     batch_size: int = 8192
