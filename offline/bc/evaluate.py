@@ -1,28 +1,37 @@
-from functools import partial
 from pathlib import Path
 
 import numpy as np
-from tqdm.contrib.concurrent import process_map
+from tqdm import tqdm
 
 from offline.config import BCConfig
 
 
-def _run_segment(seg_path, model_path):
+def evaluate_online(
+    model_path: Path,
+    num_segments: int,
+    config: BCConfig,
+) -> float:
+    """
+    Evaluate BC model on multiple segments using tinyphysics.
+
+    Runs sequentially to avoid multiprocessing issues with model loading.
+    """
+    # Import here to avoid circular imports
     from controllers.bc import Controller
     from tinyphysics import TinyPhysicsModel, TinyPhysicsSimulator
 
-    physics = TinyPhysicsModel("models/tinyphysics.onnx", debug=False)
-    controller = Controller(model_path=model_path)
-    sim = TinyPhysicsSimulator(
-        physics, str(seg_path), controller=controller, debug=False
-    )
-    return sim.rollout()["total_cost"]
+    segments_dir = Path(config.segments_dir)
+    segment_paths = sorted(segments_dir.glob("*.csv"))[:num_segments]
 
+    physics_model = TinyPhysicsModel("models/tinyphysics.onnx", debug=False)
+    costs = []
 
-def evaluate_online(model_path: Path, num_segments: int, config: BCConfig) -> float:
-    segment_paths = sorted(Path(config.segments_dir).glob("*.csv"))[:num_segments]
-
-    run_fn = partial(_run_segment, model_path=str(model_path))
-    costs = process_map(run_fn, segment_paths, max_workers=16, chunksize=10)
+    for seg_path in tqdm(segment_paths, desc="Evaluating", leave=False):
+        controller = Controller(model_path=str(model_path))
+        sim = TinyPhysicsSimulator(
+            physics_model, str(seg_path), controller=controller, debug=False
+        )
+        result = sim.rollout()
+        costs.append(result["total_cost"])
 
     return float(np.mean(costs))
