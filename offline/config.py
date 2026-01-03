@@ -49,6 +49,9 @@ class BCConfig:
     future_length: int = 50  # Future context length
     control_start_idx: int = 100  # When control begins (from tinyphysics)
 
+    # Noise
+    past_noise_std: float = 0.025
+
     # Model
     input_size: int = 247
     hidden_sizes: tuple[int, ...] = (1024, 1024, 1024, 512)

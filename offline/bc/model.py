@@ -14,8 +14,6 @@ class BCModel(nn.Module):
     def __init__(self, config: BCConfig) -> None:
         super().__init__()
 
-        self.noise_std = 0.025
-
         self.config = config
 
         layers: list[nn.Module] = []
@@ -46,8 +44,8 @@ class BCModel(nn.Module):
             actions: [batch] in range [-2, 2]
         """
 
-        if self.training and self.noise_std > 0:
-            noise = torch.randn_like(x[:, 5:45]) * self.noise_std
+        if self.training and self.config.past_noise_std > 0:
+            noise = torch.randn_like(x[:, 5:45]) * self.config.past_noise_std
             x = x.clone()
             x[:, 5:45] = x[:, 5:45] + noise
 
