@@ -41,7 +41,7 @@ def train(config: BCConfig) -> None:
         train_dataset,
         batch_size=config.batch_size,
         shuffle=True,
-        num_workers=4,
+        num_workers=25,
         pin_memory=True,
     )
 
