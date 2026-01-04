@@ -24,7 +24,7 @@ class PGTOConfig:
     w_jerk: float = 100.0
     context_length: int = 20
     control_start_idx: int = 100
-    cost_steps: int = 400  # Only evaluate first 400 steps
+    cost_steps: int = 400  # Only evaluate first 400 steps, matches tinyphysics
 
     # Physics (match tinyphysics.py)
     physics_temperature: float = 0.8
@@ -50,6 +50,7 @@ class BCConfig:
     control_start_idx: int = 100  # When control begins (from tinyphysics)
 
     # Noise
+    # Not actually used currently, overwritten by noise annealing
     past_noise_std: float = 0.012
 
     # Model
@@ -59,9 +60,9 @@ class BCConfig:
     # Training
     batch_size: int = 8192
     lr: float = 3e-4
-    lr_min: float = 5e-6
+    lr_min: float = 1e-6
     weight_decay: float = 1e-5
-    epochs: int = 100
+    epochs: int = 400
 
     # Evaluation
     eval_every_n_epochs: int = 100

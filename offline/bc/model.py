@@ -6,7 +6,7 @@ from offline.config import BCConfig
 
 class BCModel(nn.Module):
     """
-    Asymmetric MLP: separate pathways for past vs future.
+    Asymmetric MLP with separate pathways for past vs future.
     Light noise on past to handle distribution shift.
     """
 
@@ -17,8 +17,7 @@ class BCModel(nn.Module):
 
         self.noise_std = self.config.past_noise_std
 
-        # Past pathway: keep relatively small (shifts at eval)
-        # 40 → 256 → 128 → 128
+        # Past pathway: keep relatively small (distribution shift at eval)
         self.past_encoder = nn.Sequential(
             nn.Linear(40, 256),
             nn.GELU(),
@@ -28,8 +27,7 @@ class BCModel(nn.Module):
             nn.GELU(),
         )
 
-        # Future pathway: large (no shift, reliable signal)
-        # 200 → 1024 → 512 → 256
+        # Future pathway: large (no distribution shift, reliable signal)
         self.future_encoder = nn.Sequential(
             nn.Linear(200, 1024),
             nn.GELU(),
@@ -40,7 +38,6 @@ class BCModel(nn.Module):
         )
 
         # Current state: small
-        # 5 → 64 → 64
         self.current_encoder = nn.Sequential(
             nn.Linear(5, 64),
             nn.GELU(),
@@ -48,7 +45,7 @@ class BCModel(nn.Module):
             nn.GELU(),
         )
 
-        # Head: 128 + 256 + 64 + 2 = 450
+        # Head: 128 + 256 + 64 + 2 (past validity) = 450
         self.head = nn.Sequential(
             nn.Linear(450, 512),
             nn.GELU(),

@@ -1,6 +1,6 @@
 import os
 
-os.environ["OMP_NUM_THREADS"] = "1"  # Prevent deadlock
+os.environ["OMP_NUM_THREADS"] = "1"  # Prevent deadlock on SLURM cluster
 
 from functools import partial
 from pathlib import Path

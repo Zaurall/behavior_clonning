@@ -28,12 +28,10 @@ def train(config: BCConfig) -> None:
     output_dir = Path(config.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Get segment IDs and split
     logger.info("Loading segment IDs...")
     segment_ids = get_segment_ids(Path(config.pgto_data_dir))
     logger.info(f"Training on {len(segment_ids)} segments")
 
-    # Load dataset
     logger.info("Loading training data...")
     train_dataset = BCDataset(segment_ids, config, verbose=True)
 
@@ -45,11 +43,9 @@ def train(config: BCConfig) -> None:
         pin_memory=True,
     )
 
-    # Initialize model
     model = BCModel(config).to(device)
     logger.info(f"Model parameters: {model.count_parameters():,}")
 
-    # Optimizer and scheduler
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config.lr,
@@ -66,6 +62,7 @@ def train(config: BCConfig) -> None:
     best_online_cost = float("inf")
 
     for epoch in range(config.epochs):
+        # Noise annealing over training
         model.noise_std = 0.023 - (0.021 * epoch / (config.epochs - 1))
 
         # Train
