@@ -10,7 +10,7 @@ class Controller(BaseController):
     INPUT_SIZE = 247
     CONTROL_START_IDX = 100
 
-    def __init__(self, model_path: str = "models/bc_best.pt") -> None:
+    def __init__(self, model_path: str = "models/bc.pt") -> None:
         self.model_path = model_path
 
         # Lazy load model on first update
