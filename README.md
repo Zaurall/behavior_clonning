@@ -4,7 +4,7 @@ Hi! This is my solution to the comma.ai Controls Challenge. The original README 
 
 Final Score: **43.776**
 
-I had basically zero prior experience in evolutionary algorithms, control theory, MPC, or behavioral cloning which meant I learned a ton, but if you find yourself asking, “this is weird. why did he do it this way?”, it’s because I didn’t know there was a better way to do it.
+I had basically zero prior experience in evolutionary algorithms, control theory, MPC, or behavioral cloning which meant I learned a ton, but if you find yourself saying, “this is weird. why did he do it this way?”, it’s because I didn’t know there was a better way to do it.
 
 All the expensive work for this was done on Middlebury College’s (pretty small) HPC cluster.
 
