@@ -5,3 +5,5 @@ models/tinyphysics_*.onnx
 *.swp
 logs/*.out
 optuna_pgto_study.db
+*.ipynb_checkpoint*
+*.log*

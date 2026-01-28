@@ -141,6 +141,7 @@ class CMAESModel(nn.Module):
         a_ego: torch.Tensor,  # [B]
         roll: torch.Tensor,  # [B]
         future_targets: torch.Tensor,  # [H] - shared across batch
+        **kwargs,
     ) -> torch.Tensor:
         """
         Compute features for CMA-ES model.

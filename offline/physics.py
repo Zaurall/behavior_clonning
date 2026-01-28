@@ -122,3 +122,7 @@ class BatchedPhysics(nn.Module):
         lataccel = torch.clamp(lataccel, -5, 5)
         tokens = torch.searchsorted(self.bins, lataccel, right=False)
         return torch.clamp(tokens, 0, 1023)
+
+    def decode(self, tokens: torch.Tensor) -> torch.Tensor:
+        """Convert token indices to lataccel values."""
+        return self.bins[tokens]

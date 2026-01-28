@@ -14,6 +14,7 @@ class PGTOConfig:
     n_iterations_max: int = 19
     elite_frac: float = 0.19
     horizon: int = 6
+    future_lookahead: int = 50  # Extra lookahead for models (like BC)
     noise_std_init: float = 0.19
     shift_threshold: float = 0.005
     w_action_smooth: float = 4.5  # Jerky action penalty
@@ -35,8 +36,11 @@ class PGTOConfig:
     # Paths
     onnx_model_path: str = "models/tinyphysics.onnx"
     cmaes_params_path: str = "models/cmaes_params.npy"
-    segments_dir: str = "data/"
+    prior_model_type: str = "bc"  # "cmaes" or "bc"
+    bc_model_path: str = "models/bc.pt"
+    segments_dir: str = "../images_1/data/test"
     output_dir: str = "data/pgto/"
+    # output_dir: str = "data/pgto_cpu_1/"
 
     # Device
     device: str = "cuda"

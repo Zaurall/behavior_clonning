@@ -126,12 +126,19 @@ class PGTOOptimizer:
         self.config = config
 
         self.physics = BatchedPhysics(config=config)
-        self.cmaes = CMAESModel(config=config)
+        
+        if self.config.prior_model_type == "bc":
+            from offline.bc.prior import BCPrior
+            self.prior = BCPrior(config=config)
+            # if hasattr(self.prior, "set_physics"):
+            #    self.prior.set_physics(self.physics)
+        else:
+            self.prior = CMAESModel(config=config)
 
         # PGTO step optimizer
         self.pgto_step = PGTOStep(
             physics=self.physics,
-            cmaes=self.cmaes,
+            prior=self.prior,
             config=config,
         )
 
@@ -223,7 +230,9 @@ class PGTOOptimizer:
         for t in iterator:
             target_t = segment.targets[t]
 
-            future_context = segment.get_future_context(t, self.config.horizon)
+            future_context = segment.get_future_context(
+                t, self.config.horizon + self.config.future_lookahead
+            )
 
             # Record current state BEFORE taking action
             all_history_states[:, t] = history_states
@@ -250,6 +259,7 @@ class PGTOOptimizer:
                 prev_action=prev_action,
                 cmaes_state=cmaes_state,
                 future_context=future_context,
+                t=t,
             )
 
             all_iterations_used.append(iterations_used)

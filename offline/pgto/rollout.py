@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 
 from offline.cmaes import CMAESModel, CMAESState
 from offline.config import PGTOConfig
@@ -15,10 +16,10 @@ class ParallelRollout:
     """
 
     def __init__(
-        self, physics: BatchedPhysics, cmaes: CMAESModel, config: PGTOConfig
+        self, physics: BatchedPhysics, prior: nn.Module, config: PGTOConfig
     ) -> None:
         self.physics = physics
-        self.cmaes = cmaes
+        self.prior = prior
         self.config = config
 
     @torch.no_grad()
@@ -31,6 +32,7 @@ class ParallelRollout:
         cmaes_state: CMAESState,  # Batch size R*K
         future_context: FutureContext,  # {targets, roll, v_ego, a_ego} each [H]
         noise: torch.Tensor,  # [R*K, noise_window]
+        t: int,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Evaluate R*K candidates over H-step horizon.
@@ -44,6 +46,7 @@ class ParallelRollout:
             cmaes_state: CMA-ES state for all candidates
             future_context: Future trajectory info
             noise: Noise to add for first noise_window steps
+            t: Absolute timestamp
 
         Returns:
             costs: [R*K] total cost per candidate
@@ -80,9 +83,10 @@ class ParallelRollout:
                     cmaes_batch.error_integral + error_h, -5.0, 5.0
                 )
 
-            # Get CMA-ES action
+            # Get Prior action
             # Pass targets[h+1:] to match training code where 'future' starts at t+1
-            features = self.cmaes.compute_features(
+            history_lat = self.physics.decode(tokens)
+            features = self.prior.compute_features(
                 target=target_h.expand(RK),
                 current_lataccel=prev_lat,
                 state=cmaes_batch,
@@ -90,8 +94,13 @@ class ParallelRollout:
                 a_ego=a_ego_h.expand(RK),
                 roll=roll_h.expand(RK),
                 future_targets=future_context.targets[h + 1 :],
+                future_context=future_context,
+                history_states=states,
+                history_lataccel=history_lat,
+                h=h,
+                t=t,
             )
-            cmaes_actions = self.cmaes(features)
+            cmaes_actions = self.prior(features)
 
             # Add noise
             if h < self.config.noise_window:

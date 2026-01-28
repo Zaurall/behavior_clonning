@@ -85,6 +85,7 @@ python tinyphysics.py --model_path ./models/tinyphysics.onnx --data_path ./data 
 # generate a report comparing two controllers
 python eval.py --model_path ./models/tinyphysics.onnx --data_path ./data --num_segs 100 --test_controller pid --baseline_controller zero
 
+python -m offline.run -n 1 -w 0 -m 100 -d cuda
 ```
 You can also use the notebook at [`experiment.ipynb`](https://github.com/commaai/controls_challenge/blob/master/experiment.ipynb) for exploration.
 
@@ -107,7 +108,8 @@ Run the following command, then submit `report.html` and your code to [this form
 Competitive scores (`total_cost<100`) will be added to the leaderboard
 
 ```
-python eval.py --model_path ./models/tinyphysics.onnx --data_path ./data --num_segs 5000 --test_controller <insert your controller name> --baseline_controller pid
+python eval.py --model_path ./models/tinyphysics.onnx --data_path ./data --num_segs 5000 --test_controller bc --baseline_controller pid
+python eval.py --model_path ./models/tinyphysics.onnx --data_path ../images_1/data/test --num_segs 1 --test_controller bc --baseline_controller pid
 ```
 
 ## Changelog
