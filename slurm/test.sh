@@ -13,7 +13,7 @@ for ((WORKER_ID=0; WORKER_ID<NUM_WORKERS; WORKER_ID++)); do
         -w $WORKER_ID \
         -m $MAX_SEGMENT \
         -d cuda \
-        > worker_${WORKER_ID}.log 2>&1 &
+        > worker_1_${WORKER_ID}.log 2>&1 &
 done
 
 echo "All workers started. Run 'jobs' to see status, 'fg' to bring to foreground."

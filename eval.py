@@ -15,7 +15,7 @@ from tqdm.contrib.concurrent import process_map
 from tinyphysics import CONTROL_START_IDX, get_available_controllers, run_rollout
 
 sns.set_theme()
-SAMPLE_ROLLOUTS = 5
+SAMPLE_ROLLOUTS = 11
 
 COLORS = {
   'test': '#c0392b',
@@ -64,6 +64,7 @@ def create_report(test, baseline, sample_rollouts, costs, num_segs):
     ax.legend()
   res.append(f'<img style="max-width:100%" src="data:image/png;base64,{img2base64(fig)}" alt="Plot">')
   agg_df = res_df.groupby('controller').agg({'lataccel_cost': 'mean', 'jerk_cost': 'mean', 'total_cost': 'mean'}).round(3).reset_index()
+  print(agg_df[agg_df['controller'] == 'test']['total_cost'].values)
   res.append(agg_df.to_html(index=False))
 
   passed_baseline = agg_df[agg_df['controller'] == 'test']['total_cost'].values[0] < agg_df[agg_df['controller'] == 'baseline']['total_cost'].values[0]
@@ -80,6 +81,7 @@ def create_report(test, baseline, sample_rollouts, costs, num_segs):
   res.append("<hr style='border: #ddd 1px solid; width: 80%'>")
   res.append("<h2  style='font-size: 30px; margin-top: 50px'>Sample Rollouts</h2>")
   fig, axs = plt.subplots(ncols=1, nrows=SAMPLE_ROLLOUTS, figsize=(15, 3 * SAMPLE_ROLLOUTS), sharex=True)
+  i = 0
   for ax, rollout in zip(axs, sample_rollouts):
     ax.plot(rollout['desired_lataccel'], label='Desired Lateral Acceleration', color='#27ae60')
     ax.plot(rollout['test_controller_lataccel'], label='Test Controller Lateral Acceleration', color=COLORS['test'])
@@ -89,6 +91,8 @@ def create_report(test, baseline, sample_rollouts, costs, num_segs):
     ax.set_title(f"Segment: {rollout['seg']}")
     ax.axline((CONTROL_START_IDX, 0), (CONTROL_START_IDX, 1), color='black', linestyle='--', alpha=0.5, label='Control Start')
     ax.legend()
+    res.append(f"<h3 style='font-size: 20px;'> segment: {i:05d} total_cost - {res_df[res_df['controller'] == 'test']['total_cost'].values[i]} </h3>")
+    i += 1
   fig.tight_layout()
   res.append(f'<img style="max-width:100%" src="data:image/png;base64,{img2base64(fig)}" alt="Plot">')
   res.append("</body></html>")
@@ -133,7 +137,12 @@ if __name__ == "__main__":
   for controller_cat, controller_type in [('baseline', args.baseline_controller), ('test', args.test_controller)]:
     print(f"Running batch rollouts => {controller_cat} controller: {controller_type}")
     rollout_partial = partial(run_rollout, controller_type=controller_type, model_path=args.model_path, debug=False)
-    results = process_map(rollout_partial, files[SAMPLE_ROLLOUTS:], max_workers=16, chunksize=10)
+    if controller_cat == "baseline":
+      results = process_map(rollout_partial, files[SAMPLE_ROLLOUTS:], max_workers=16, chunksize=10)
+    else:
+      results = []
+      for data_file in tqdm(files[SAMPLE_ROLLOUTS:]):
+          results.append(rollout_partial(data_file))
     costs += [{'controller': controller_cat, **result[0]} for result in results]
 
-  create_report(args.test_controller, args.baseline_controller, sample_rollouts, costs, len(files))
+    create_report(args.test_controller, args.baseline_controller, sample_rollouts, costs, len(files))
