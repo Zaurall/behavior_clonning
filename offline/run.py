@@ -52,6 +52,13 @@ def main() -> None:
         required=True,
         help="Torch device to use (cpu, mps, or cuda)",
     )
+    parser.add_argument(
+        "-s",
+        "--settings-path",
+        type=str,
+        default="settings.yaml",
+        help="Path to settings file",
+    )
     args = parser.parse_args()
 
     if args.worker_id < 0 or args.worker_id >= args.num_workers:
@@ -65,7 +72,7 @@ def main() -> None:
     
     gdrive_manager = None
     if config.use_gdrive:
-        gdrive_manager = GDriveManager(config.gdrive_folder_name)
+        gdrive_manager = GDriveManager(config.gdrive_folder_name, settings_file=args.settings_path)
         print("Using GDrive for output")
 
     # Get segments this worker should process
