@@ -2,52 +2,32 @@ from typing import Optional
 from pathlib import Path
 from pydrive2.auth import GoogleAuth, RefreshError
 from pydrive2.drive import GoogleDrive
+from oauth2client.service_account import ServiceAccountCredentials
 import os
 
 class GDriveManager:
-    def __init__(self, root_folder_name: str, settings_file: str = "settings.yaml"):
+    def __init__(self, root_folder_name: str, service_account_file: str = "service_key.json"):
         # Configure GoogleAuth
-        self.gauth = GoogleAuth(settings_file=settings_file)
+        self.gauth = GoogleAuth()
         
-        # Try to load saved credentials
-        self.gauth.LoadCredentialsFile(settings_file)
+        scope = ['https://www.googleapis.com/auth/drive']
         
-        if self.gauth.credentials is None:
-            # Authenticate via browser if no credentials (first run)
-            # This might require user interaction
-            print("Please authenticate via browser...")
-            self._auth_online()
-        elif self.gauth.access_token_expired:
-            # Refresh token if expired
+        if os.path.exists(service_account_file):
             try:
-                self.gauth.Refresh()
-            except RefreshError:
-                print("Refresh token missing or invalid. Re-authenticating...")
-                # Fallback to fresh auth if refresh fails
-                self.gauth = GoogleAuth(settings_file=settings_file)
-                self._auth_online()
+                self.gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(
+                    service_account_file, scope
+                )
+            except Exception as e:
+                print(f"Error loading service account from {service_account_file}: {e}")
+                raise
         else:
-            # Initialize the saved credentials
-            self.gauth.Authorize()
-            
-        # Save credentials back to file
-        self.gauth.SaveCredentialsFile(settings_file)
+            raise FileNotFoundError(f"Service account key file '{service_account_file}' not found. Please place your service_key.json in the project root.")
         
         self.drive = GoogleDrive(self.gauth)
         self.root_folder_name = root_folder_name
         self.root_id = self._get_or_create_folder(root_folder_name)
         self.file_cache = {} # Cache for fast existence checks
 
-    def _auth_online(self):
-        """Helper to handle the online authentication flow"""
-        # We manually get flow to inject params, but ensure config is loaded first
-        if self.gauth.flow is None:
-             self.gauth.GetFlow()
-        
-        self.gauth.flow.params.update({'access_type': 'offline'})
-        self.gauth.flow.params.update({'approval_prompt': 'force'})
-        self.gauth.LocalWebserverAuth()
-        
     def _get_or_create_folder(self, folder_name: str, parent_id: Optional[str] = None) -> str:
         """Finds or creates a folder by name."""
         query = f"title='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"

@@ -53,11 +53,10 @@ def main() -> None:
         help="Torch device to use (cpu, mps, or cuda)",
     )
     parser.add_argument(
-        "-s",
-        "--settings-path",
+        "--service-account-file",
         type=str,
-        default="settings.yaml",
-        help="Path to settings file",
+        default="service_key.json",
+        help="Path to Google service account JSON key file",
     )
     args = parser.parse_args()
 
@@ -72,7 +71,7 @@ def main() -> None:
     
     gdrive_manager = None
     if config.use_gdrive:
-        gdrive_manager = GDriveManager(config.gdrive_folder_name, settings_file=args.settings_path)
+        gdrive_manager = GDriveManager(config.gdrive_folder_name, service_account_file=args.service_account_file)
         print("Using GDrive for output")
 
     # Get segments this worker should process
