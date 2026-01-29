@@ -71,7 +71,7 @@ def main() -> None:
     
     gdrive_manager = None
     if config.use_gdrive:
-        gdrive_manager = GDriveManager(config.gdrive_folder_name, service_account_file=args.service_account_file)
+        gdrive_manager = GDriveManager(config.gdrive_folder_name)
         print("Using GDrive for output")
 
     # Get segments this worker should process

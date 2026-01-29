@@ -1,27 +1,55 @@
 from typing import Optional
 from pathlib import Path
-from pydrive2.auth import GoogleAuth, RefreshError
+from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
-from oauth2client.service_account import ServiceAccountCredentials
 import os
 
 class GDriveManager:
-    def __init__(self, root_folder_name: str, service_account_file: str = "service_key.json"):
-        # Configure GoogleAuth
+    def __init__(self, root_folder_name: str):
+        # Calculate paths relative to this script file
+        # script is in behavior_clonner/offline/
+        # secrets are in behavior_clonner/
+        base_dir = Path(__file__).parent.parent.absolute()
+        secrets_path = base_dir / "client_secrets.json"
+        
+        # We store credentials in settings.yaml in the same folder as secrets
+        creds_path = base_dir / "mycreds.txt"
+
+        if not secrets_path.exists():
+             raise FileNotFoundError(f"Could not find client_secrets.json at {secrets_path}")
+
+        # Configure GoogleAuth with explicit paths to prevent "expired" errors
         self.gauth = GoogleAuth()
         
-        scope = ['https://www.googleapis.com/auth/drive']
-        
-        if os.path.exists(service_account_file):
+        # FORCE the use of specific file paths so PyDrive doesn't get lost
+        self.gauth.settings['client_config_backend'] = 'file'
+        self.gauth.settings['client_config_file'] = str(secrets_path)
+        self.gauth.settings['save_credentials'] = True
+        self.gauth.settings['save_credentials_backend'] = 'file'
+        self.gauth.settings['save_credentials_file'] = str(creds_path)
+        self.gauth.settings['get_refresh_token'] = True
+
+        # Try to load existing credentials
+        if creds_path.exists():
+            self.gauth.LoadCredentialsFile(str(creds_path))
+
+        if self.gauth.credentials is None:
+            # First run: Authenticate via browser
+            print("Authenticating: Please check your browser...")
+            self.gauth.LocalWebserverAuth()
+        elif self.gauth.access_token_expired:
+            # Explicit refresh logic
+            print("Token expired, refreshing...")
             try:
-                self.gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                    service_account_file, scope
-                )
+                self.gauth.Refresh()
             except Exception as e:
-                print(f"Error loading service account from {service_account_file}: {e}")
-                raise
+                print(f"Token refresh failed: {e}. Re-authenticating...")
+                self.gauth.LocalWebserverAuth()
         else:
-            raise FileNotFoundError(f"Service account key file '{service_account_file}' not found. Please place your service_key.json in the project root.")
+            self.gauth.Authorize()
+            
+        # Save updates back to yaml immediately
+        self.gauth.SaveCredentialsFile(str(creds_path))
         
         self.drive = GoogleDrive(self.gauth)
         self.root_folder_name = root_folder_name
