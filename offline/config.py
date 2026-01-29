@@ -44,7 +44,7 @@ class PGTOConfig:
 
     # GDrive
     use_gdrive: bool = True
-    gdrive_folder_name: str = "pgto_data"
+    gdrive_folder_name: str = "pgto"
 
     # Device
     device: str = "cuda"
@@ -87,4 +87,4 @@ class BCConfig:
     
     # GDrive
     use_gdrive: bool = True
-    gdrive_folder_name: str = "pgto_data"
+    gdrive_folder_name: str = "pgto"
