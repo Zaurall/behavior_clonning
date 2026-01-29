@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 
 from offline.cmaes import CMAESModel, CMAESState
 from offline.config import PGTOConfig
@@ -18,14 +19,14 @@ class PGTOStep:
     def __init__(
         self,
         physics: BatchedPhysics,
-        cmaes: CMAESModel,
+        prior: nn.Module,
         config: PGTOConfig,
     ) -> None:
         self.physics = physics
-        self.cmaes = cmaes
+        self.prior = prior
         self.config = config
 
-        self.rollout = ParallelRollout(physics=physics, cmaes=cmaes, config=config)
+        self.rollout = ParallelRollout(physics=physics, prior=prior, config=config)
 
     @torch.no_grad()
     def optimize(
@@ -36,6 +37,7 @@ class PGTOStep:
         prev_action: torch.Tensor,  # [R]
         cmaes_state: CMAESState,  # Batch size R
         future_context: FutureContext,  # {targets, roll, v_ego, a_ego} each [H]
+        t: int,
     ) -> tuple[torch.Tensor, int]:
         """
         Find optimal action for each of R restarts.
@@ -46,6 +48,7 @@ class PGTOStep:
             prev_lataccel: Current lataccel for each restart
             cmaes_state: CMA-ES state for each restart
             future_context: Future trajectory context (shared across restarts)
+            t: Absolute timestamp
 
         Returns:
             best_actions: [R] optimal action for each restart
@@ -100,6 +103,7 @@ class PGTOStep:
                 cmaes_state=cmaes_expanded,
                 future_context=future_context,
                 noise=noise_flat,
+                t=t,
             )
 
             # Reshape to [R, K]

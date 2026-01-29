@@ -7,6 +7,7 @@ from tqdm import tqdm
 from offline.config import PGTOConfig
 from offline.pgto.optimizer import PGTOOptimizer
 from offline.segment import get_segment_paths, load_segment
+from offline.gdrive import GDriveManager
 
 
 def main() -> None:
@@ -61,15 +62,28 @@ def main() -> None:
 
     output_dir = Path(config.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    
+    gdrive_manager = None
+    if config.use_gdrive:
+        gdrive_manager = GDriveManager(config.gdrive_folder_name)
+        print("Using GDrive for output")
 
     # Get segments this worker should process
     all_segments = get_segment_paths(Path(config.segments_dir))
     segments = [
         p for p in all_segments if args.min_segment <= int(p.stem) <= args.max_segment
     ]
-    remaining = [
-        p for p in segments if not (output_dir / f"{p.stem}.pt").exists()
-    ]  # Filter first
+    
+    if gdrive_manager:
+        gdrive_manager.sync_file_cache()
+        remaining = [
+            p for p in segments if not gdrive_manager.file_exists(f"{p.stem}.pt")
+        ]
+    else:
+        remaining = [
+            p for p in segments if not (output_dir / f"{p.stem}.pt").exists()
+        ]  # Filter first
+        
     my_segments = remaining[args.worker_id :: args.num_workers]
 
     print(f"Worker {args.worker_id}/{args.num_workers}")
@@ -90,13 +104,23 @@ def main() -> None:
         output_path = output_dir / f"{segment_path.stem}.pt"
 
         # Double-check not done
-        if output_path.exists():
+        if gdrive_manager:
+            if gdrive_manager.file_exists(f"{segment_path.stem}.pt"):
+                continue
+        elif output_path.exists():
             continue
 
         try:
             segment = load_segment(segment_path, config=config)
             result = optimizer.optimize(segment, verbose=args.verbose)
+            
             result.save(output_path)
+            
+            if gdrive_manager:
+                gdrive_manager.upload_file(output_path)
+                # optionally remove local file if you don't want to keep it
+                # output_path.unlink() 
+            
             pbar.set_postfix(
                 {"seg": segment_path.stem, "cost": f"{result.best_cost:.1f}"}
             )

@@ -14,6 +14,7 @@ from offline.bc.dataset import BCDataset, get_segment_ids
 from offline.bc.evaluate import evaluate_online
 from offline.bc.model import BCModel
 from offline.config import BCConfig
+from offline.gdrive import GDriveManager
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,6 +28,11 @@ def train(config: BCConfig) -> None:
     device = torch.device(config.device)
     output_dir = Path(config.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    if config.use_gdrive:
+        logger.info("Syncing data from GDrive...")
+        gdrive_manager = GDriveManager(config.gdrive_folder_name)
+        gdrive_manager.sync_folder_down(Path(config.pgto_data_dir))
 
     logger.info("Loading segment IDs...")
     segment_ids = get_segment_ids(Path(config.pgto_data_dir))
