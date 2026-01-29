@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Self
+# from typing import Self
 
 import numpy as np
 import torch
@@ -24,7 +24,8 @@ class CMAESState:
     u_t2: torch.Tensor  # [B]
 
     @classmethod
-    def zeros(cls, batch_size: int, device: str) -> Self:
+    # def zeros(cls, batch_size: int, device: str) -> Self:
+    def zeros(cls, batch_size: int, device: str) -> "CMAESState":
         return cls(
             prev_error=torch.zeros(batch_size, device=device),
             error_integral=torch.zeros(batch_size, device=device),
@@ -41,7 +42,8 @@ class CMAESState:
         u_t2: float,
         batch_size: int,
         device: str,
-    ) -> Self:
+    ) -> "CMAESState":
+    # ) -> Self:
         return cls(
             prev_error=torch.full((batch_size,), prev_error, device=device),
             error_integral=torch.full((batch_size,), error_integral, device=device),
@@ -49,7 +51,8 @@ class CMAESState:
             u_t2=torch.full((batch_size,), u_t2, device=device),
         )
 
-    def clone(self) -> Self:
+    # def clone(self) -> Self:
+    def clone(self) -> "CMAESState":
         return type(self)(
             prev_error=self.prev_error.clone(),
             error_integral=self.error_integral.clone(),
@@ -57,7 +60,8 @@ class CMAESState:
             u_t2=self.u_t2.clone(),
         )
 
-    def expand(self, new_batch_size: int) -> Self:
+    # def expand(self, new_batch_size: int) -> Self:
+    def expand(self, new_batch_size: int) -> "CMAESState":
         """
         Expand batch dimension (for going from R restarts to R*K candidates).
         """

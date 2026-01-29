@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Self
+# from typing import Self
 
 import numpy as np
 import torch
@@ -43,7 +43,8 @@ class TrajectoryData:
         }
 
     @classmethod
-    def from_dict(cls, d: dict[str, torch.Tensor], device: str = "cpu") -> Self:
+    # def from_dict(cls, d: dict[str, torch.Tensor], device: str = "cpu") -> Self:
+    def from_dict(cls, d: dict[str, torch.Tensor], device: str = "cpu") -> "TrajectoryData":
         return cls(
             history_states=d["history_states"].to(device),
             history_tokens=d["history_tokens"].to(device),
@@ -91,7 +92,8 @@ class PGTOResult:
         torch.save(data, path)
 
     @classmethod
-    def load(cls, path: Path, device: str = "cpu") -> Self:
+    # def load(cls, path: Path, device: str = "cpu") -> Self:
+    def load(cls, path: Path, device: str = "cpu") -> "PGTOResult":
         data = torch.load(path, map_location=device)
 
         restarts = []
