@@ -9,11 +9,6 @@ class GDriveManager:
         # Configure GoogleAuth
         self.gauth = GoogleAuth(settings_file=settings_file)
         
-        # # Force offline access to get refresh token
-        # self.gauth.GetFlow()
-        # self.gauth.flow.params.update({'access_type': 'offline'})
-        # self.gauth.flow.params.update({'approval_prompt': 'force'})
-        
         # Try to load saved credentials
         self.gauth.LoadCredentialsFile(settings_file)
         
@@ -21,7 +16,7 @@ class GDriveManager:
             # Authenticate via browser if no credentials (first run)
             # This might require user interaction
             print("Please authenticate via browser...")
-            self.gauth.LocalWebserverAuth()
+            self._auth_online()
         elif self.gauth.access_token_expired:
             # Refresh token if expired
             try:
@@ -29,7 +24,8 @@ class GDriveManager:
             except RefreshError:
                 print("Refresh token missing or invalid. Re-authenticating...")
                 # Fallback to fresh auth if refresh fails
-                self.gauth.LocalWebserverAuth()
+                self.gauth = GoogleAuth(settings_file=settings_file)
+                self._auth_online()
         else:
             # Initialize the saved credentials
             self.gauth.Authorize()
@@ -42,6 +38,16 @@ class GDriveManager:
         self.root_id = self._get_or_create_folder(root_folder_name)
         self.file_cache = {} # Cache for fast existence checks
 
+    def _auth_online(self):
+        """Helper to handle the online authentication flow"""
+        # We manually get flow to inject params, but ensure config is loaded first
+        if self.gauth.flow is None:
+             self.gauth.GetFlow()
+        
+        self.gauth.flow.params.update({'access_type': 'offline'})
+        self.gauth.flow.params.update({'approval_prompt': 'force'})
+        self.gauth.LocalWebserverAuth()
+        
     def _get_or_create_folder(self, folder_name: str, parent_id: Optional[str] = None) -> str:
         """Finds or creates a folder by name."""
         query = f"title='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
