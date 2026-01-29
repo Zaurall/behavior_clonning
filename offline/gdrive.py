@@ -9,10 +9,10 @@ class GDriveManager:
         # Configure GoogleAuth
         self.gauth = GoogleAuth(settings_file=settings_file)
         
-        # Force offline access to get refresh token
-        self.gauth.GetFlow()
-        self.gauth.flow.params.update({'access_type': 'offline'})
-        self.gauth.flow.params.update({'approval_prompt': 'force'})
+        # # Force offline access to get refresh token
+        # self.gauth.GetFlow()
+        # self.gauth.flow.params.update({'access_type': 'offline'})
+        # self.gauth.flow.params.update({'approval_prompt': 'force'})
         
         # Try to load saved credentials
         self.gauth.LoadCredentialsFile(settings_file)
