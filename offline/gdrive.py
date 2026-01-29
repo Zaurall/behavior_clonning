@@ -1,6 +1,6 @@
 from typing import Optional
 from pathlib import Path
-from pydrive2.auth import GoogleAuth
+from pydrive2.auth import GoogleAuth, RefreshError
 from pydrive2.drive import GoogleDrive
 import os
 
@@ -8,6 +8,11 @@ class GDriveManager:
     def __init__(self, root_folder_name: str, settings_file: str = "settings.yaml"):
         # Configure GoogleAuth
         self.gauth = GoogleAuth(settings_file=settings_file)
+        
+        # Force offline access to get refresh token
+        self.gauth.GetFlow()
+        self.gauth.flow.params.update({'access_type': 'offline'})
+        self.gauth.flow.params.update({'approval_prompt': 'force'})
         
         # Try to load saved credentials
         self.gauth.LoadCredentialsFile(settings_file)
@@ -19,7 +24,12 @@ class GDriveManager:
             self.gauth.LocalWebserverAuth()
         elif self.gauth.access_token_expired:
             # Refresh token if expired
-            self.gauth.Refresh()
+            try:
+                self.gauth.Refresh()
+            except RefreshError:
+                print("Refresh token missing or invalid. Re-authenticating...")
+                # Fallback to fresh auth if refresh fails
+                self.gauth.LocalWebserverAuth()
         else:
             # Initialize the saved credentials
             self.gauth.Authorize()
