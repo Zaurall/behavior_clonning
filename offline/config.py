@@ -38,7 +38,7 @@ class PGTOConfig:
     cmaes_params_path: str = "models/cmaes_params.npy"
     prior_model_type: str = "bc"  # "cmaes" or "bc"
     bc_model_path: str = "models/bc.pt"
-    segments_dir: str = "../images_1/data/test"
+    segments_dir: str = "data/test"
     output_dir: str = "data/pgto/"
     # output_dir: str = "data/pgto_cpu_1/"
 
