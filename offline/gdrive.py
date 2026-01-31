@@ -87,32 +87,59 @@ class GDriveManager:
 
     def file_exists(self, filename: str) -> bool:
         if not self.file_cache:
-            self.sync_file_cache()
+            try:
+                self.sync_file_cache()
+            except Exception as e:
+                print(f"Warning: Failed to sync file cache: {e}")
+                return False
         return filename in self.file_cache
 
     def upload_file(self, local_path: Path, filename: Optional[str] = None):
         if filename is None:
             filename = local_path.name
             
-        file_metadata = {
-            'title': filename, 
-            'parents': [{'id': self.root_id}]
-        }
+        import time
+        max_retries = 5
         
-        # Check if file already exists (update it)
-        if self.file_exists(filename):
-             file_id = self.file_cache[filename]
-             drive_file = self.drive.CreateFile({'id': file_id})
-        else:
-             drive_file = self.drive.CreateFile(file_metadata)
-             
-        drive_file.SetContentFile(str(local_path))
-        try:
-            drive_file.Upload()
-            # Update cache
-            self.file_cache[filename] = drive_file['id']
-        except Exception as e:
-            print(f"Failed to upload {filename}: {e}")
+        for attempt in range(max_retries):
+            try:
+                # Check if file already exists (update it)
+                if self.file_exists(filename):
+                     file_id = self.file_cache[filename]
+                     drive_file = self.drive.CreateFile({'id': file_id})
+                else:
+                     file_metadata = {
+                        'title': filename, 
+                        'parents': [{'id': self.root_id}]
+                    }
+                     drive_file = self.drive.CreateFile(file_metadata)
+                     
+                drive_file.SetContentFile(str(local_path))
+                drive_file.Upload()
+                # Update cache
+                self.file_cache[filename] = drive_file['id']
+                return # Success
+            except Exception as e:
+                print(f"Failed to upload {filename} (attempt {attempt + 1}/{max_retries}): {e}")
+                
+                # Check for the specific config error and try to re-inject settings
+                if "Backend" in str(e) and "not configured" in str(e):
+                     print("Attempting to re-configure GAuth settings...")
+                     base_dir = Path(__file__).parent.parent.absolute()
+                     secrets_path = base_dir / "client_secrets.json"
+                     creds_path = base_dir / "mycreds.txt"
+                     self.gauth.settings['client_config_backend'] = 'file'
+                     self.gauth.settings['client_config_file'] = str(secrets_path)
+                     self.gauth.settings['save_credentials_backend'] = 'file'
+                     self.gauth.settings['save_credentials_file'] = str(creds_path)
+                
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                else:
+                    # Reraise the last exception so it can be logged by caller if needed
+                    # But run.py just prints it, which is fine.
+                    print(f"Giving up on {filename}")
+                    raise e
 
     def download_file(self, filename: str, local_path: Path):
         """Downloads a file from GDrive to local path."""
